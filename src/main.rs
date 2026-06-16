@@ -1,6 +1,6 @@
 use clap::Parser;
+use std::fs;
 use std::io;
-use std::{fs, path};
 
 #[derive(Parser)]
 struct Cli {
@@ -45,6 +45,13 @@ fn logic() -> Result<(), io::Error> {
                 outpath.display(),
                 file.size()
             );
+            if let Some(p) = outpath.parent() {
+                if !p.exists() {
+                    fs::create_dir_all(&p)?;
+                }
+            }
+            let mut outfile = fs::File::create(&outpath)?;
+            io::copy(&mut file, &mut outfile)?;
         }
     }
     Ok(())
