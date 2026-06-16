@@ -8,13 +8,20 @@ struct Cli {
 }
 
 fn main() {
-    std::process::exit(logic());
+    if let Err(error) = logic() {
+        eprintln!("Oops! Something went wrong: {}", error);
+        std::process::exit(1);
+    }
 }
 
-fn logic() -> i32 {
+fn logic() -> Result<(), io::Error> {
     let args = Cli::parse();
     println!("The zip file is : {:?}", args.path);
-    let file = fs::File::open(&args.path).unwrap();
-    let mut archive = zip::ZipArchive::new(file).unwrap();
-    0
+    let file = fs::File::open(&args.path)?;
+    let mut archive = zip::ZipArchive::new(file)?;
+    println!(
+        "Successfully opened! The zip contains {} files.",
+        archive.len()
+    );
+    Ok(())
 }
