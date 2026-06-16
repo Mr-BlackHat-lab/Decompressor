@@ -14,7 +14,7 @@ fn main() {
     }
 }
 
-fn logic() -> Result<(), io::Error> {
+fn logic() -> Result<(), Box<dyn std::error::Error>> {
     let args = Cli::parse();
     println!("The zip file is : {:?}", args.path);
     let file = fs::File::open(&args.path)?;
