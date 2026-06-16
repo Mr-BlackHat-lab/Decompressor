@@ -2,6 +2,9 @@ use clap::Parser;
 use std::fs;
 use std::io;
 
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt;
+
 #[derive(Parser)]
 struct Cli {
     path: std::path::PathBuf, // path of zip file
@@ -50,6 +53,12 @@ fn logic() -> Result<(), Box<dyn std::error::Error>> {
             }
             let mut outfile = fs::File::create(&outpath)?;
             io::copy(&mut file, &mut outfile)?;
+        }
+        #[cfg(unix)]
+        {
+            if let Some(mode) = file.unix_mode() {
+                fs::set_permissions(&outpath, fs::Permissions::from_mode(mode))?;
+            }
         }
     }
     Ok(())
