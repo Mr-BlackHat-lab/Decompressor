@@ -1,6 +1,6 @@
 use clap::Parser;
-use std::fs;
 use std::io;
+use std::{fs, path};
 
 #[derive(Parser)]
 struct Cli {
@@ -23,5 +23,29 @@ fn logic() -> Result<(), io::Error> {
         "Successfully opened! The zip contains {} files.",
         archive.len()
     );
+    for i in 0..archive.len() {
+        let mut file = archive.by_index(i)?;
+        let outpath = match file.enclosed_name() {
+            Some(path) => path.to_owned(),
+            None => continue,
+        };
+        {
+            let comment = file.comment();
+            if !comment.is_empty() {
+                println!("File:{} comment:{}", i, comment);
+            }
+        }
+        if (*file.name()).ends_with('/') {
+            println!("File {} extracted to \"{}\"", i, outpath.display());
+            fs::create_dir_all(&outpath)?;
+        } else {
+            println!(
+                "File {} extracted to \"{}\" ({} bytes)",
+                i,
+                outpath.display(),
+                file.size()
+            );
+        }
+    }
     Ok(())
 }
